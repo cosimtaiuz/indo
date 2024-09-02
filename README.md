@@ -5,6 +5,9 @@ This idea came to us while thinking about how gamification has turned old ideas,
 language learning, into massive successes (Duolingo), and reflecting upon how AI is
 disrupting many industries, from animation to writing, and so on.
 
+![Screenshot 2024-09-02 at 11 57 42](https://github.com/user-attachments/assets/0635233a-e981-4d95-8d94-41af00ef630e)
+
+
 It's also an experiment to see how quickly we could build a GenAI app
 using modern LLM coding assistants.
 The answer was: pretty quickly! About 3 hours, which were mostly spent figuring out
