@@ -10,6 +10,7 @@ import {
   type User,
   dailyUserRanking,
   changeUsername,
+  updateUserAnswer,
 } from "./server-action";
 import Image from "next/image";
 import { Textarea } from "@/components/ui/textarea";
@@ -42,6 +43,7 @@ export function GuessPage({ dailyImageData }: GuessPageProps) {
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState("");
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const [isPromptRevealed, setIsPromptRevealed] = useState(false);
 
   const { toast } = useToast();
 
@@ -170,6 +172,25 @@ export function GuessPage({ dailyImageData }: GuessPageProps) {
     }
   };
 
+  const handleRevealPrompt = async () => {
+    if (
+      window.confirm(
+        "Are you sure? This will use up all your remaining tries for today."
+      )
+    ) {
+      setIsPromptRevealed(true);
+      // Update the user's tries to max
+      const updatedAnswer = await updateUserAnswer(
+        dailyImageData.id,
+        "Prompt revealed",
+        0,
+        user.id,
+        10
+      );
+      setUserAnswer(updatedAnswer);
+    }
+  };
+
   return (
     <div className="flex-grow flex flex-col items-center justify-center p-8">
       <Header />
@@ -267,25 +288,52 @@ export function GuessPage({ dailyImageData }: GuessPageProps) {
                 placeholder="Enter your guess here..."
                 className="w-full resize-none"
                 rows={3}
-                disabled={isLoading || (userAnswer?.tries || 0) >= 10}
+                disabled={
+                  isLoading ||
+                  (userAnswer?.tries || 0) >= 10 ||
+                  isPromptRevealed
+                }
               />
-              <Button
-                type="submit"
-                className="w-full whitespace-normal"
-                disabled={isLoading || (userAnswer?.tries || 0) >= 10}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (userAnswer?.tries || 0) >= 10 ? (
-                  "Daily Limit Reached. Try again tomorrow!"
-                ) : (
-                  "Submit Guess"
-                )}
-              </Button>
+              <div className="flex justify-between items-center">
+                <Button
+                  type="submit"
+                  className="flex-grow mr-2"
+                  disabled={
+                    isLoading ||
+                    (userAnswer?.tries || 0) >= 10 ||
+                    isPromptRevealed
+                  }
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (userAnswer?.tries || 0) >= 10 || isPromptRevealed ? (
+                    "Daily Limit Reached"
+                  ) : (
+                    "Submit Guess"
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="bg-purple-100 text-purple-800 hover:bg-purple-200"
+                  onClick={handleRevealPrompt}
+                  disabled={(userAnswer?.tries || 0) >= 10 || isPromptRevealed}
+                >
+                  Reveal Prompt
+                </Button>
+              </div>
             </form>
+            {isPromptRevealed && (
+              <div className="mt-4 p-4 bg-purple-100 rounded-md">
+                <h3 className="text-lg font-semibold text-purple-800 mb-2">
+                  Revealed Prompt:
+                </h3>
+                <p className="text-purple-900">{dailyImageData.prompt}</p>
+              </div>
+            )}
             <AnimatePresence>
               {closeness !== null && (
                 <motion.div

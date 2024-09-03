@@ -1,4 +1,3 @@
-import Header from "../components/header";
 import { GuessPage } from "./guess-page";
 import { getDailyImage } from "./server-action";
 

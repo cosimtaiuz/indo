@@ -375,7 +375,8 @@ export async function updateUserAnswer(
   dailyImageId: string,
   answerText: string,
   answerValuation: number,
-  uid: string
+  uid: string,
+  overrideTries?: number
 ): Promise<UserAnswer> {
   const supabase = createClient();
   const { data: user, error: userError } = await supabase
@@ -396,13 +397,17 @@ export async function updateUserAnswer(
   const existingAnswer = await getUserAnswer(dailyImageId, uid);
 
   if (existingAnswer) {
+    const updateData: Partial<UserAnswer> = {
+      answer_text: answerText,
+      answer_valuation: answerValuation,
+    };
+
+    updateData.tries =
+      overrideTries !== undefined ? overrideTries : existingAnswer.tries + 1;
+
     const { data, error } = await supabase
       .from("user_answers")
-      .update({
-        answer_text: answerText,
-        answer_valuation: answerValuation,
-        tries: existingAnswer.tries + 1,
-      })
+      .update(updateData)
       .eq("id", existingAnswer.id)
       .select()
       .single();
@@ -414,14 +419,17 @@ export async function updateUserAnswer(
 
     return data;
   } else {
+    const insertData: Partial<UserAnswer> = {
+      uid: user.id,
+      daily_image_id: dailyImageId,
+      answer_text: answerText,
+      answer_valuation: answerValuation,
+      tries: overrideTries !== undefined ? overrideTries : 1,
+    };
+
     const { data, error } = await supabase
       .from("user_answers")
-      .insert({
-        uid: user.id,
-        daily_image_id: dailyImageId,
-        answer_text: answerText,
-        answer_valuation: answerValuation,
-      })
+      .insert(insertData)
       .select()
       .single();
 
