@@ -179,15 +179,19 @@ export function GuessPage({ dailyImageData }: GuessPageProps) {
       )
     ) {
       setIsPromptRevealed(true);
-      // Update the user's tries to max
+      // Update the user's tries to max while keeping the highest score
       const updatedAnswer = await updateUserAnswer(
         dailyImageData.id,
         "Prompt revealed",
-        0,
+        userAnswer ? userAnswer.answer_valuation : 0,
         user.id,
         10
       );
       setUserAnswer(updatedAnswer);
+
+      // Refresh leaderboard after revealing the prompt
+      const updatedRanking = await dailyUserRanking(dailyImageData.id);
+      setLeaderboard(updatedRanking);
     }
   };
 
