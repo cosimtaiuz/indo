@@ -399,7 +399,10 @@ export async function updateUserAnswer(
   if (existingAnswer) {
     const updateData: Partial<UserAnswer> = {
       answer_text: answerText,
-      answer_valuation: answerValuation,
+      answer_valuation: Math.max(
+        existingAnswer.answer_valuation,
+        answerValuation
+      ),
     };
 
     updateData.tries =
